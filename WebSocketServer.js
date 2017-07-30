@@ -16,7 +16,7 @@ module.exports = class WebSocketServer {
     var self = this;
 
     this._server.listen(this._port, function () {
-      console.log('WebSocket Server listening at port %d', self._port);
+      console.log('WebSocket server listening at port %d', self._port);
     });
 
     var numConnections = 0;
@@ -39,6 +39,11 @@ module.exports = class WebSocketServer {
   }
 
   stopServer() {
+
+    this._server.close( function () {
+      console.log('WebSocket server stoped');
+    });
+
   }
 
 };
