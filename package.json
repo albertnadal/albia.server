@@ -1,0 +1,17 @@
+{
+  "name": "albia.server",
+  "version": "0.0.0",
+  "description": "Server for Real Time Communication for the IoT",
+  "main": "server.js",
+  "author": "Albert Nadal Garriga",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "4.13.4",
+    "socket.io": "^2.0.3"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
