@@ -61,6 +61,14 @@ module.exports = class SocketIONamespacesManager {
           socket.on('write', function () {
           });
 
+          socket.on('disconnect', function () {
+
+            self._countConnections--;
+            console.log("Websocket disconnected.");
+            console.log("Total connections: "+self._countConnections);
+
+          });
+
         } else {
 
           console.log("Invalid websocket connection attempt.");
@@ -80,7 +88,7 @@ module.exports = class SocketIONamespacesManager {
       }
 
       // SEARCH FOR VALID token IN namespace SCOPE IN DATABASE
-      return false;
+      return true;
     }
 
 };
