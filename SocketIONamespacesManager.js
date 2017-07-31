@@ -33,30 +33,54 @@ module.exports = class SocketIONamespacesManager {
 
       var namespace = this._io.of('/v1/'+namespaceId);
       this._activeNamespaces[namespaceId] = namespace;
-      this.initializeNamespace(namespace);
+      this.initializeNamespace(namespace, namespaceId);
       console.log("namespace "+namespaceId+" loaded");
       return namespace;
     }
 
-    initializeNamespace(namespace) {
+    initializeNamespace(namespace, namespaceId) {
 
       var self = this;
 
       namespace.on('connection', function(socket) {
 
-        self._countConnections++;
+        var deviceToken = socket.request.headers.authorization;
 
-        console.log("New websocket connection.");
-        console.log("Total connections: "+self._countConnections);
+        console.log("Web socket connection attempt. Token: "+deviceToken+" Namespace: "+namespaceId);
 
-        socket.on('read', function () {
-        });
+        if(self.deviceTokenIsValid(deviceToken, namespaceId)) {
 
-        socket.on('write', function () {
-        });
+          self._countConnections++;
+
+          console.log("New websocket connection.");
+          console.log("Total connections: "+self._countConnections);
+
+          socket.on('read', function () {
+          });
+
+          socket.on('write', function () {
+          });
+
+        } else {
+
+          console.log("Invalid websocket connection attempt.");
+          console.log("Closing connection.");
+          socket.disconnect(true);
+        }
+
 
       });
 
+    }
+
+    deviceTokenIsValid(deviceToken, namespaceId) {
+
+      if((deviceToken == undefined) || (deviceToken == null)) {
+        return false;
+      }
+
+      // SEARCH FOR VALID token IN namespace SCOPE IN DATABASE
+      return false;
     }
 
 };

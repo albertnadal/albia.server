@@ -49,7 +49,7 @@ module.exports = class APIServer {
     // GET /v1/request-namespace
     this._express.get('/v1/request-namespace', function(req, res) {
 
-      var deviceToken = req.header('X-albia-device-token');
+      var deviceToken = req.header('Authorization');
       console.log("GET /v1/request-namespace deviceToken: "+deviceToken);
 
       if(self.deviceTokenIsValid(deviceToken)) {
