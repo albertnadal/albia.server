@@ -8,7 +8,7 @@ module.exports = class WebSocketServer {
     this._port = port;
     this._socketIOManager = socketIOManager;
     this._server = require('http').createServer(this._express);
-    this._io = require('socket.io')(this._server, { path: '/' , serveClient: false, wsEngine: 'ws', transports: ['websocket'] });
+    this._socketIOManager.initializeWithServer(this._server);
   }
 
   startServer() {
@@ -17,23 +17,6 @@ module.exports = class WebSocketServer {
 
     this._server.listen(this._port, function () {
       console.log('WebSocket server listening at port %d', self._port);
-    });
-
-    var numConnections = 0;
-    var namespaceV1 = this._io.of('/v1');
-
-    namespaceV1.on('connection', function (socket) {
-
-      console.log("New socket connection.");
-
-      socket.on('add', function (username) {
-        ++numConnections;
-      });
-
-      socket.on('remove', function () {
-          --numConnections;
-      });
-
     });
 
   }

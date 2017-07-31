@@ -31,8 +31,11 @@ module.exports = class APIServer {
 
   initializeEndpoints() {
 
+    var self = this;
+
     // GET /v1/request-device-token
     this._express.get('/v1/request-device-token', function(req, res) {
+
       var deviceKey = req.header('X-albia-device-key');
       var APIKey = req.header('X-albia-api-key');
       console.log("GET /v1/request-device-token deviceKey: "+deviceKey+" APIKey: "+APIKey);
@@ -40,18 +43,53 @@ module.exports = class APIServer {
       res.writeHead(200, {'Content-Type': 'application/json'});
       var json = JSON.stringify({ token: "ABCDEFGHIJKLMNOPQ" });
       res.end(json);
+
     });
 
     // GET /v1/request-namespace
     this._express.get('/v1/request-namespace', function(req, res) {
+
       var deviceToken = req.header('X-albia-device-token');
       console.log("GET /v1/request-namespace deviceToken: "+deviceToken);
 
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      var json = JSON.stringify({ namespace: "the-requested-namespace" });
-      res.end(json);
+      if(self.deviceTokenIsValid(deviceToken)) {
+
+        var namespaceId = self.getNamespaceIdForDeviceWithToken(deviceToken);
+        var socketIOnamespace = self._socketIOManager.loadNamespace(namespaceId);
+
+        if((socketIOnamespace == null) || (socketIOnamespace == undefined)) {
+
+          // 500 Server error
+          res.writeHead(500);
+          res.end();
+
+        } else {
+
+          // 200 Success
+          res.writeHead(200, {'Content-Type': 'application/json'});
+          var json = JSON.stringify({ namespace: namespaceId });
+          res.end(json);
+
+        }
+      } else {
+
+        // 401 Unauthorized response
+        res.writeHead(401);
+        res.end();
+      }
+
     });
 
+  }
+
+  getNamespaceIdForDeviceWithToken(deviceToken) {
+    // SEARCH FOR VALID namespaceId IN DATABASE
+    return 'namespace1234';
+  }
+
+  deviceTokenIsValid(token) {
+    // SEARCH FOR VALID token IN DATABASE
+    return true;
   }
 
 };
