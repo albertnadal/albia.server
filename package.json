@@ -3,12 +3,13 @@
   "version": "0.0.0",
   "description": "Server for Real Time Communication for the IoT",
   "main": "server.js",
-  "author": "Albert Nadal Garriga",
+  "author": "Albert Nadal Garriga <anadalg@gmail.com> (http://lafruitera.com/)",
   "private": true,
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "4.13.4",
+    "mysql": "github:mysqljs/mysql",
     "socket.io": "^2.0.3"
   },
   "scripts": {
