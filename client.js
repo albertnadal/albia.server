@@ -109,5 +109,6 @@ function openWebSocketWithTokenAndNamespace(host, wsport, token, namespace) {
     forceNew: true
   });
   socket.compress(true);
+  socket.emit('write', '{"key":"name", "value":"Albert Nadal", "type": "Integer", "date":"26-09-1981"}');
 
 }

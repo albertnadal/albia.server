@@ -58,7 +58,10 @@ module.exports = class SocketIONamespacesManager {
           socket.on('read', function () {
           });
 
-          socket.on('write', function () {
+          socket.on('write', function (data) {
+            var obj = JSON.parse(data);
+            console.log("OBJECT:");
+            console.log(obj);
           });
 
           socket.on('disconnect', function () {
