@@ -1,0 +1,42 @@
+/**
+ * Albia Server Protocol Buffers API
+ *
+ * This file describes the API used to communicate messages from Albia clients to the server.
+ *
+ * Author: Albert Nadal Garriga
+ */
+
+syntax = "proto3";
+//import "google/protobuf/timestamp.proto";
+import google_protobuf "github.com/golang/protobuf/ptypes/timestamp"
+
+message DeviceRecord {
+
+  enum RecordType {
+    DOUBLE = 0;
+    FLOAT = 1;
+    INT32 = 2;
+    INT64 = 3;
+    UINT32 = 4;
+    UINT64 = 5;
+    BOOL = 6;
+    STRING = 7;
+    BYTES = 8;
+  }
+
+  string key = 1;
+  RecordType type = 2;
+  google.protobuf.Timestamp date = 3;
+
+  oneof record_value {
+    double doubleValue = 4;
+    float floatValue = 5;
+    int32 int32Value = 6;
+    int64 int64Value = 7;
+    uint32 uint32Value = 8;
+    uint64 uint64Value = 9;
+    bool boolValue = 10;
+    string stringValue = 11;
+    bytes byteStringValue = 12;
+  }
+}
