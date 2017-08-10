@@ -1,3 +1,6 @@
+var messages = require('./albia_pb');
+var message = new messages.DeviceRecord();
+
 var SocketIONamespacesManager = require("./SocketIONamespacesManager.js");
 var APIServer = require("./APIServer.js");
 var WebSocketServer = require("./WebSocketServer.js");

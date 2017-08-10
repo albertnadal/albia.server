@@ -9,6 +9,7 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "4.13.4",
+    "google-protobuf": "^3.3.0",
     "mysql": "github:mysqljs/mysql",
     "socket.io": "^2.0.3"
   },
