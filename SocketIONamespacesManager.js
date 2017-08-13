@@ -1,3 +1,5 @@
+var messages = require('./albia_pb');
+
 module.exports = class SocketIONamespacesManager {
 
     constructor(){
@@ -59,9 +61,12 @@ module.exports = class SocketIONamespacesManager {
           });
 
           socket.on('write', function (data) {
-            var obj = JSON.parse(data);
-            console.log("OBJECT:");
-            console.log(obj);
+            console.log('WRITE: ');
+            console.log(data);
+
+            var messageReceived = messages.DeviceRecord.deserializeBinary(data);
+            console.log("OBJECT RECEIVED TROUGH WEBSOCKET:");
+            console.log("KEY: "+messageReceived.getKey()+" VALUE: "+messageReceived.getInt32value());
           });
 
           socket.on('disconnect', function () {
