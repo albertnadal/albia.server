@@ -66,7 +66,7 @@ module.exports = class SocketIONamespacesManager {
 
             var messageReceived = messages.DeviceRecord.deserializeBinary(data);
             console.log("OBJECT RECEIVED TROUGH WEBSOCKET:");
-            console.log("KEY: "+messageReceived.getKey()+" VALUE: "+messageReceived.getInt32value());
+            console.log("DEVICE ID: "+messageReceived.getDeviceid()+" KEY: "+messageReceived.getKey()+" VALUE: "+messageReceived.getInt32value());
           });
 
           socket.on('disconnect', function () {

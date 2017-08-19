@@ -23,19 +23,20 @@ message DeviceRecord {
     BYTES = 8;
   }
 
-  string key = 1;
-  RecordType type = 2;
-  google.protobuf.Timestamp date = 3;
+  uint32 deviceId = 1;
+  string key = 2;
+  RecordType type = 3;
+  google.protobuf.Timestamp date = 4;
 
   oneof record_value {
-    double doubleValue = 4;
-    float floatValue = 5;
-    int32 int32Value = 6;
-    int64 int64Value = 7;
-    uint32 uint32Value = 8;
-    uint64 uint64Value = 9;
-    bool boolValue = 10;
-    string stringValue = 11;
-    bytes byteStringValue = 12;
+    double doubleValue = 5;
+    float floatValue = 6;
+    int32 int32Value = 7;
+    int64 int64Value = 8;
+    uint32 uint32Value = 9;
+    uint64 uint64Value = 10;
+    bool boolValue = 11;
+    string stringValue = 12;
+    bytes byteStringValue = 13;
   }
 }

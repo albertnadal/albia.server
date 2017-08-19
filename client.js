@@ -116,6 +116,11 @@ function openWebSocketWithTokenAndNamespace(host, wsport, token, namespace) {
   var currentTimestampUTC = new messages.google.protobuf.Timestamp();
   currentTimestampUTC.setSeconds(Math.floor((new Date()).getTime() / 1000)); // UNIX Timestamp in UTC
 
+  var buffer = new Buffer(token, 'base64');
+  var tokenArray = buffer.toString().split(";");
+  var deviceId = (tokenArray.length) ? parseInt(tokenArray[0]) : 0;
+console.log("device id from token: "+deviceId);
+  message.setDeviceid(deviceId);
   message.setKey('year');
   message.setDate(currentTimestampUTC);
   message.setType(messages.DeviceRecord.RecordType.INT32);
