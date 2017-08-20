@@ -5,7 +5,8 @@ module.exports = {
   openConnection: openConnection,
   closeConnection: closeConnection,
   queryWithConnection: queryWithConnection,
-  query: query
+  query: query,
+  queryWithValues: queryWithValues
 };
 
 function openConnection() {
@@ -24,8 +25,20 @@ function queryWithConnection(sql, connection, callback) {
   });
 }
 
+function queryWithValuesAndConnection(sql, values, connection, callback) {
+  connection.query(sql, values, function(error, results, fields) {
+    callback(error, results, fields);
+  });
+}
+
 function query(sql, callback) {
   var connection = openConnection();
   queryWithConnection(sql, connection, callback);
+  closeConnection(connection);
+}
+
+function queryWithValues(sql, values, callback) {
+  var connection = openConnection();
+  queryWithValuesAndConnection(sql, values, connection, callback);
   closeConnection(connection);
 }

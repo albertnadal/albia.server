@@ -1,3 +1,6 @@
+var protobuffer = require('./albia_pb');
+var DeviceRecord = require('./models/DeviceRecord');
+
 module.exports = class SocketIONamespacesManager {
 
     constructor(){
@@ -58,7 +61,16 @@ module.exports = class SocketIONamespacesManager {
           socket.on('read', function () {
           });
 
-          socket.on('write', function () {
+          socket.on('write', function (data) {
+            console.log('WRITE: ');
+            console.log(data);
+
+            var deviceRecordData = protobuffer.DeviceRecord.deserializeBinary(data);
+            var deviceRecord = new DeviceRecord(deviceRecordData);
+            deviceRecord.save(function(success) {
+              console.log("Record saved: "+success);
+            });
+
           });
 
           socket.on('disconnect', function () {

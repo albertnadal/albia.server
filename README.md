@@ -7,7 +7,8 @@ WebSockets server for Real Time Communication for the IoT
 
 ```
 $ npm install
-$ npm start
+$ protoc --js_out=import_style=commonjs,binary:. albia.proto
+$ node server.js
 ```
 
 ## Features
