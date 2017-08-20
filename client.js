@@ -111,7 +111,6 @@ function openWebSocketWithTokenAndNamespace(host, wsport, token, namespace) {
   });
   socket.compress(true);
 
-  var message = new protobuffer.DeviceRecord();
   var currentTimestampUTC = new protobuffer.google.protobuf.Timestamp();
   currentTimestampUTC.setSeconds(Math.floor((new Date()).getTime() / 1000)); // UNIX Timestamp in UTC
 
@@ -119,13 +118,14 @@ function openWebSocketWithTokenAndNamespace(host, wsport, token, namespace) {
   var tokenArray = buffer.toString().split(";");
   var deviceId = (tokenArray.length) ? parseInt(tokenArray[0]) : 0;
 
+  var message = new protobuffer.DeviceRecord();
   message.setDeviceid(deviceId);
   message.setKey('year');
   message.setDate(currentTimestampUTC);
   message.setType(protobuffer.DeviceRecord.RecordType.INT32);
   message.setInt32value(1981);
-  var buffer = message.serializeBinary();
-  socket.emit('write', toArrayBuffer(buffer));
+
+  socket.emit('write', toArrayBuffer(message.serializeBinary()));
 }
 
 function toArrayBuffer(buffer) {
