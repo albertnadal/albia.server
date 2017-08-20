@@ -1,4 +1,5 @@
-var messages = require('./albia_pb');
+var protobuffer = require('./albia_pb');
+var DeviceRecord = require('./models/DeviceRecord');
 
 module.exports = class SocketIONamespacesManager {
 
@@ -64,9 +65,12 @@ module.exports = class SocketIONamespacesManager {
             console.log('WRITE: ');
             console.log(data);
 
-            var messageReceived = messages.DeviceRecord.deserializeBinary(data);
-            console.log("OBJECT RECEIVED TROUGH WEBSOCKET:");
-            console.log("DEVICE ID: "+messageReceived.getDeviceid()+" KEY: "+messageReceived.getKey()+" VALUE: "+messageReceived.getInt32value());
+            var deviceRecordData = protobuffer.DeviceRecord.deserializeBinary(data);
+            var deviceRecord = new DeviceRecord(deviceRecordData);
+            deviceRecord.save(function(success) {
+              console.log("Record saved: "+success);
+            });
+
           });
 
           socket.on('disconnect', function () {

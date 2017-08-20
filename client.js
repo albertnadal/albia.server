@@ -1,7 +1,6 @@
 const io = require('socket.io-client');
 var http = require("http");
-var messages = require('./albia_pb');
-
+var protobuffer = require('./albia_pb');
 
 connectWithCretendials('localhost', 3001, 3000, 'key1234', 'app1234', function(invalidResponseCode) {
     console.log("HTTP GET Error code: "+invalidResponseCode);
@@ -112,21 +111,20 @@ function openWebSocketWithTokenAndNamespace(host, wsport, token, namespace) {
   });
   socket.compress(true);
 
-  var message = new messages.DeviceRecord();
-  var currentTimestampUTC = new messages.google.protobuf.Timestamp();
+  var message = new protobuffer.DeviceRecord();
+  var currentTimestampUTC = new protobuffer.google.protobuf.Timestamp();
   currentTimestampUTC.setSeconds(Math.floor((new Date()).getTime() / 1000)); // UNIX Timestamp in UTC
 
   var buffer = new Buffer(token, 'base64');
   var tokenArray = buffer.toString().split(";");
   var deviceId = (tokenArray.length) ? parseInt(tokenArray[0]) : 0;
-console.log("device id from token: "+deviceId);
+
   message.setDeviceid(deviceId);
   message.setKey('year');
   message.setDate(currentTimestampUTC);
-  message.setType(messages.DeviceRecord.RecordType.INT32);
+  message.setType(protobuffer.DeviceRecord.RecordType.INT32);
   message.setInt32value(1981);
   var buffer = message.serializeBinary();
-  console.log(buffer);
   socket.emit('write', toArrayBuffer(buffer));
 }
 
