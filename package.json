@@ -7,11 +7,11 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.17.2",
+    "body-parser": "1.17.2",
     "express": "4.13.4",
-    "google-protobuf": "^3.3.0",
+    "google-protobuf": "3.3.0",
     "mysql": "github:mysqljs/mysql",
-    "socket.io": "^2.0.3"
+    "socket.io": "2.0.3"
   },
   "scripts": {
     "start": "node server.js"
