@@ -1,4 +1,4 @@
-var protobuffer = require('./albia_pb');
+var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
 
 module.exports = class WebSocketManager {

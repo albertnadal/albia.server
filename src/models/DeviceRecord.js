@@ -1,5 +1,5 @@
 var DB = require("./../Database.js");
-var messages = require('./../albia_pb');
+var messages = require('../proto3/albia_pb');
 
 module.exports = class DeviceRecord {
 
@@ -31,12 +31,9 @@ module.exports = class DeviceRecord {
       case messages.DeviceRecord.RecordType.BOOL: sqlValues[10] = this.deviceRecordData.getBoolvalue(); break;
       case messages.DeviceRecord.RecordType.STRING: sqlValues[11] = this.deviceRecordData.getStringvalue(); break;
       case messages.DeviceRecord.RecordType.BYTES:  var uint8vector = this.deviceRecordData.getBytestringvalue();
-                                                    sqlValues[12] = "";
-                                                    for(var i = 0; i < uint8vector.length; i++){
-                                                        sqlValues[12] += String.fromCharCode( uint8vector[i] );
-                                                    }
-                                                    break;
+						sqlValues[12] = new Buffer(uint8vector, "binary"); break;
     }
+
 
     DB.queryWithValues('INSERT INTO device_record(id_device, valueKey, valueType, valueDate, doubleValue, floatValue, int32Value, int64Value, uint32Value, uint64Value, boolValue, stringValue, byteStringValue) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', sqlValues, function(error, results, fields) {
 
