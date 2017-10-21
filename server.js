@@ -1,6 +1,6 @@
-var WebSocketManager = require("./WebSocketManager.js");
-var APIServer = require("./APIServer.js");
-var WebSocketServer = require("./WebSocketServer.js");
+var WebSocketManager = require("./src/WebSocketManager.js");
+var APIServer = require("./src/APIServer.js");
+var WebSocketServer = require("./src/WebSocketServer.js");
 
 var socketIOManager = new WebSocketManager();
 var webSocketServer = new WebSocketServer(3000, socketIOManager);

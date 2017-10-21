@@ -14,7 +14,7 @@ function connectWithCretendials(host, port, wsport, deviceKey, apiKey, onError) 
       path: '/v1/request-device-token',
       method: 'GET',
       headers: {
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'X-albia-device-key': deviceKey,
           'X-albia-api-key': apiKey
       }
@@ -61,7 +61,7 @@ function connectWithToken(host, port, wsport, token, onError) {
       path: '/v1/request-namespace',
       method: 'GET',
       headers: {
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'Authorization': token
       }
   };
