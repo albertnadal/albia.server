@@ -114,6 +114,39 @@ module.exports = class APIServer {
 
     });
 
+    // GET /v1/request-device-id
+    this._express.get('/v1/request-device-id', function(req, res) {
+
+      var deviceKey = req.query.deviceKey;
+      var deviceToken = req.header('Authorization');
+      console.log("GET /v1/request-device-id deviceToken: " + deviceToken);
+
+      self.getNamespaceIdForDeviceWithToken(deviceToken, function(deviceTokenIsValid, namespace) {
+
+        if (deviceTokenIsValid) {
+          Device.getDeviceIdWithDeviceKeyAndNamespace(deviceKey, namespace, function(deviceId) {
+              // 200 Success
+              res.writeHead(200, {
+                'Content-Type': 'application/json'
+              });
+              var json = JSON.stringify({
+                id: deviceId
+              });
+              res.end(json);
+          });
+
+        } else {
+
+          // 401 Unauthorized response
+          res.writeHead(401);
+          res.end();
+        }
+
+      });
+
+
+    });
+
   }
 
   getNamespaceIdForDeviceWithToken(deviceToken, callback) {
@@ -121,7 +154,6 @@ module.exports = class APIServer {
     account.initWithDeviceToken(deviceToken, function(tokenIsValid) {
       callback(tokenIsValid, account.namespace);
     });
-
   }
 
 };

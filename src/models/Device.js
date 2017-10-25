@@ -37,5 +37,21 @@ module.exports = class Device {
 
   }
 
+  static getDeviceIdWithDeviceKeyAndNamespace(deviceKey, namespace, callback) {
+
+    var self = this;
+    DB.query('SELECT d.id_device AS id_device FROM device d, account a WHERE a.id_account = d.id_account AND a.namespace = \''+namespace+'\' AND d.device_key = \''+deviceKey+'\' LIMIT 1', function(error, results, fields) {
+
+      if(results && results.length) {
+        // DeviceId
+        callback(results[0].id_device);
+      } else {
+        // DeviceId not found
+        callback(0);
+      }
+
+    });
+
+  }
 
 };

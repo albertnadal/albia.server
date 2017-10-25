@@ -1,5 +1,6 @@
 var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
+var DeviceEvent = require('./models/DeviceEvent');
 
 module.exports = class WebSocketManager {
 
@@ -68,6 +69,17 @@ module.exports = class WebSocketManager {
             var deviceRecord = new DeviceRecord(protobuffer.DeviceRecord.deserializeBinary(data));
             deviceRecord.save(function(success) {
               console.log("Record saved: "+success);
+            });
+
+          });
+
+          socket.on('emitEvent', function (data) {
+            console.log('EMIT EVENT: ');
+            console.log(data);
+
+            var deviceEvent = new DeviceEvent(protobuffer.DeviceEvent.deserializeBinary(data));
+            deviceEvent.emit(function(success) {
+              console.log("Event emited: "+success);
             });
 
           });

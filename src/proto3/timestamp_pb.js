@@ -1,8 +1,6 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {messageConventions} JS Compiler reports an error if a variable or
- *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -55,7 +53,6 @@ proto.google.protobuf.Timestamp.prototype.toObject = function(opt_includeInstanc
  *     http://goto/soy-param-migration
  * @param {!proto.google.protobuf.Timestamp} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.google.protobuf.Timestamp.toObject = function(includeInstance, msg) {
   var f, obj = {
@@ -130,7 +127,6 @@ proto.google.protobuf.Timestamp.prototype.serializeBinary = function() {
  * format), writing to the given BinaryWriter.
  * @param {!proto.google.protobuf.Timestamp} message
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.google.protobuf.Timestamp.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
