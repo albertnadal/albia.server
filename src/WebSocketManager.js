@@ -1,6 +1,7 @@
 var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
 var DeviceEvent = require('./models/DeviceEvent');
+var atob = require('atob');
 
 module.exports = class WebSocketManager {
 
@@ -32,17 +33,20 @@ module.exports = class WebSocketManager {
 
       if(this.namespaceIsLoaded(namespaceId)) {
         console.log("namespace "+namespaceId+" already loaded");
-        return this._activeNamespaces[namespaceId];
+        return this._activeNamespaces[namespaceId]['namespace'];
       }
 
       var namespace = this._io.of('/v1/'+namespaceId);
-      this._activeNamespaces[namespaceId] = namespace;
-      this.initializeNamespace(namespace, namespaceId);
+      var namespaceDeviceSockets = {};
+      this._activeNamespaces[namespaceId] = {};
+      this._activeNamespaces[namespaceId]['namespace'] = namespace;
+      this._activeNamespaces[namespaceId]['sockets'] = namespaceDeviceSockets;
+      this.initializeNamespace(namespace, namespaceId, namespaceDeviceSockets);
       console.log("namespace "+namespaceId+" loaded");
       return namespace;
     }
 
-    initializeNamespace(namespace, namespaceId) {
+    initializeNamespace(namespace, namespaceId, namespaceDeviceSockets) {
 
       var self = this;
 
@@ -50,13 +54,16 @@ module.exports = class WebSocketManager {
 
         var deviceToken = socket.request.headers.authorization;
 
-        console.log("Web socket connection attempt. Token: "+deviceToken+" Namespace: "+namespaceId);
+        console.log("Device connection attempt. Token: "+deviceToken+" Namespace: "+namespaceId);
 
         if(self.deviceTokenIsValid(deviceToken, namespaceId)) {
 
           self._countConnections++;
 
-          console.log("New websocket connection.");
+          var deviceId = self.getDeviceIdFromDeviceToken(deviceToken).toString();
+          namespaceDeviceSockets[deviceId] = socket;
+
+          console.log("New device connected. ID: "+deviceId);
           console.log("Total connections: "+self._countConnections);
 
           socket.on('read', function () {
@@ -66,35 +73,46 @@ module.exports = class WebSocketManager {
             console.log('WRITE: ');
             console.log(data);
 
-            var deviceRecord = new DeviceRecord(protobuffer.DeviceRecord.deserializeBinary(data));
+            var deviceRecord = new DeviceRecord(protobuffer.DeviceRecordMsg.deserializeBinary(data));
             deviceRecord.save(function(success) {
               console.log("Record saved: "+success);
             });
 
           });
 
-          socket.on('emitEvent', function (data) {
+          socket.on('event', function (data) {
             console.log('EMIT EVENT: ');
             console.log(data);
 
-            var deviceEvent = new DeviceEvent(protobuffer.DeviceEvent.deserializeBinary(data));
-            deviceEvent.emit(function(success) {
-              console.log("Event emited: "+success);
-            });
+            let deviceEvent = new DeviceEvent(protobuffer.DeviceEventMsg.deserializeBinary(data));
+            let targetDeviceId = deviceEvent.getTargetDeviceId().toString();
 
+            console.log("TARGET DEVICE ID: "+targetDeviceId);
+
+            if(targetDeviceId in namespaceDeviceSockets) {
+              console.log("TARGET SOCKET FOUND");
+              let targetDeviceSocket = namespaceDeviceSockets[targetDeviceId];
+              targetDeviceSocket.emit('event', data);
+              console.log("EVENT EMITED");
+            }
           });
 
           socket.on('disconnect', function () {
 
             self._countConnections--;
-            console.log("Websocket disconnected.");
-            console.log("Total connections: "+self._countConnections);
+            let deviceToken = socket.request.headers.authorization;
+            let deviceId = self.getDeviceIdFromDeviceToken(deviceToken).toString();
+            if(deviceId in namespaceDeviceSockets) {
+              delete namespaceDeviceSockets[deviceId];
+            }
 
+            console.log("Device disconnected.");
+            console.log("Total connections: "+self._countConnections);
           });
 
         } else {
 
-          console.log("Invalid websocket connection attempt.");
+          console.log("Invalid device connection attempt.");
           console.log("Closing connection.");
           socket.disconnect(true);
         }
@@ -114,4 +132,8 @@ module.exports = class WebSocketManager {
       return true;
     }
 
+    getDeviceIdFromDeviceToken(deviceToken) {
+      let tokenArray = atob(deviceToken).split(";");
+      return tokenArray[0];
+    }
 };

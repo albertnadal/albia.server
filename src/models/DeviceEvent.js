@@ -4,9 +4,10 @@ var messages = require('../proto3/albia_pb');
 module.exports = class DeviceEvent {
 
   constructor(_deviceEventData) {
+    this.action = _deviceEventData.getAction();
     this.id_device = _deviceEventData.getDeviceid();
-    this.id_target_device = _deviceEventData.getTargetDeviceid();
-    this.content = _deviceEventData.getContent();
+    this.id_target_device = _deviceEventData.getTargetdeviceid();
+    this.data = _deviceEventData.getData();
     this.date = this.secondsToDate(_deviceEventData.getDate().getSeconds());
   }
 
@@ -16,8 +17,8 @@ module.exports = class DeviceEvent {
       return t;
   }
 
-  emit(callback) {
-    callback(true);
+  getTargetDeviceId() {
+    return this.id_target_device;
   }
 
 };
