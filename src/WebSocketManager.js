@@ -1,6 +1,7 @@
 var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
 var DeviceEvent = require('./models/DeviceEvent');
+var rabbitMQ = require('rabbit.js');
 var atob = require('atob');
 
 module.exports = class WebSocketManager {
@@ -37,16 +38,20 @@ module.exports = class WebSocketManager {
       }
 
       var namespace = this._io.of('/v1/'+namespaceId);
+      var MQContext = rabbitMQ.createContext();
       var namespaceDeviceSockets = {};
+      var namespaceDeviceMQPublishersSubscribers = {};
       this._activeNamespaces[namespaceId] = {};
       this._activeNamespaces[namespaceId]['namespace'] = namespace;
       this._activeNamespaces[namespaceId]['sockets'] = namespaceDeviceSockets;
-      this.initializeNamespace(namespace, namespaceId, namespaceDeviceSockets);
+      this._activeNamespaces[namespaceId]['mqcontext'] = MQContext;
+      this._activeNamespaces[namespaceId]['mqpubssubs'] = namespaceDeviceMQPublishersSubscribers;
+      this.initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, MQContext, namespaceDeviceMQPublishersSubscribers);
       console.log("namespace "+namespaceId+" loaded");
       return namespace;
     }
 
-    initializeNamespace(namespace, namespaceId, namespaceDeviceSockets) {
+    initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, MQContext, namespaceDeviceMQPubSub) {
 
       var self = this;
 
@@ -61,7 +66,29 @@ module.exports = class WebSocketManager {
           self._countConnections++;
 
           var deviceId = self.getDeviceIdFromDeviceToken(deviceToken).toString();
+          var deviceMQPublisher = MQContext.socket('PUB');
+          var deviceMQSubscriber = MQContext.socket('SUB');
+          var MQName = namespaceId+'-'+deviceId;
+
+          deviceMQSubscriber.connect(MQName);
+
           namespaceDeviceSockets[deviceId] = socket;
+          namespaceDeviceMQPubSub[deviceId] = {};
+          namespaceDeviceMQPubSub[deviceId]['pub'] = deviceMQPublisher;
+          namespaceDeviceMQPubSub[deviceId]['sub'] = deviceMQSubscriber;
+
+          deviceMQSubscriber.on('data', function(msg, ack()) {
+            let deviceEvent = new DeviceEvent(protobuffer.DeviceEventMsg.deserializeBinary(msg));
+            let targetDeviceId = deviceEvent.getTargetDeviceId().toString();
+
+            console.log("RECEIVED MSG FROM QUEUE VALUE: " + deviceEvent.getData());
+
+            let targetDeviceSocket = namespaceDeviceSockets[targetDeviceId];
+            targetDeviceSocket.emit('event', msg);
+            console.log("EVENT EMITED");
+
+            ack();
+          });
 
           console.log("New device connected. ID: "+deviceId);
           console.log("Total connections: "+self._countConnections);
@@ -81,21 +108,30 @@ module.exports = class WebSocketManager {
           });
 
           socket.on('event', function (data) {
-            console.log('EMIT EVENT: ');
-            console.log(data);
+            console.log(' >> EVENT FROM CLIENT');
+//            console.log(data);
 
             let deviceEvent = new DeviceEvent(protobuffer.DeviceEventMsg.deserializeBinary(data));
             let targetDeviceId = deviceEvent.getTargetDeviceId().toString();
 
-            console.log("TARGET DEVICE ID: "+targetDeviceId);
-
+//            console.log("TARGET DEVICE ID: "+targetDeviceId);
+/*
             if(targetDeviceId in namespaceDeviceSockets) {
               console.log("TARGET SOCKET FOUND");
               let targetDeviceSocket = namespaceDeviceSockets[targetDeviceId];
               targetDeviceSocket.emit('event', data);
               console.log("EVENT EMITED");
-            }
+            } else {*/
+//              console.log("TARGET SOCKET NOT FOUND");
+//              console.log("TARGET ADDRESS: "+namespaceId+'-'+targetDeviceId);
+              namespaceDeviceMQPubSub[deviceId]['pub'].connect(namespaceId+'-'+targetDeviceId, function() {
+                console.log("WRITE");
+                namespaceDeviceMQPubSub[deviceId]['pub'].write(data);
+              });
+//              console.log("EVENT QUEUED");
+/*            }*/
           });
+
 
           socket.on('disconnect', function () {
 

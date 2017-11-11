@@ -7,11 +7,13 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
+    "amqplib": "^0.5.1",
     "atob": "^2.0.3",
     "body-parser": "1.17.2",
     "express": "4.13.4",
     "google-protobuf": "3.3.0",
     "mysql": "github:mysqljs/mysql",
+    "rabbit.js": "^0.4.4",
     "socket.io": "2.0.3"
   },
   "scripts": {

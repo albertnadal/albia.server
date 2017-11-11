@@ -21,4 +21,8 @@ module.exports = class DeviceEvent {
     return this.id_target_device;
   }
 
+  getData() {
+    return this.data;
+  }
+
 };
