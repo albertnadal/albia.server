@@ -4,5 +4,11 @@ module.exports = {
     user: 'root',
     password: 'root',
     database: 'albia'
+  },
+  amqp: {
+    host: 'localhost',
+    user: '',
+    password: '',
+    port: 5672
   }
 };

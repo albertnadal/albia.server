@@ -1,3 +1,4 @@
+var Config = require("./Configuration.js");
 var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
 var DeviceEvent = require('./models/DeviceEvent');
@@ -11,7 +12,8 @@ module.exports = class WebSocketManager {
         this._countConnections = 0;
         this._amqpConnection = null;
 
-        amqp.connect('amqp://localhost', (function(err, amqpConnection) {
+        let amqpUserPassword = Config.amqp.user != '' ? Config.amqp.user+":"+Config.amqp.password+"@" : '';
+        amqp.connect("amqp://"+amqpUserPassword+""+Config.amqp.host+":"+Config.amqp.port, (function(err, amqpConnection) {
           if (err != null) return;
           this._amqpConnection = amqpConnection;
         }).bind(this));
