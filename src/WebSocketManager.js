@@ -1,7 +1,7 @@
 var protobuffer = require('./proto3/albia_pb');
 var DeviceRecord = require('./models/DeviceRecord');
 var DeviceEvent = require('./models/DeviceEvent');
-var rabbitMQ = require('rabbit.js');
+var amqp = require('amqplib/callback_api');
 var atob = require('atob');
 
 module.exports = class WebSocketManager {
@@ -9,6 +9,12 @@ module.exports = class WebSocketManager {
     constructor(){
         this._activeNamespaces = {};
         this._countConnections = 0;
+        this._amqpConnection = null;
+
+        amqp.connect('amqp://localhost', (function(err, amqpConnection) {
+          if (err != null) return;
+          this._amqpConnection = amqpConnection;
+        }).bind(this));
     }
 
     initializeWithServer(server) {
@@ -38,20 +44,18 @@ module.exports = class WebSocketManager {
       }
 
       var namespace = this._io.of('/v1/'+namespaceId);
-      var MQContext = rabbitMQ.createContext();
       var namespaceDeviceSockets = {};
-      var namespaceDeviceMQPublishersSubscribers = {};
+
       this._activeNamespaces[namespaceId] = {};
       this._activeNamespaces[namespaceId]['namespace'] = namespace;
       this._activeNamespaces[namespaceId]['sockets'] = namespaceDeviceSockets;
-      this._activeNamespaces[namespaceId]['mqcontext'] = MQContext;
-      this._activeNamespaces[namespaceId]['mqpubssubs'] = namespaceDeviceMQPublishersSubscribers;
-      this.initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, MQContext, namespaceDeviceMQPublishersSubscribers);
-      console.log("namespace "+namespaceId+" loaded");
+
+      this.initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, this._amqpConnection);
+
       return namespace;
     }
 
-    initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, MQContext, namespaceDeviceMQPubSub) {
+    initializeNamespace(namespace, namespaceId, namespaceDeviceSockets, amqpConnection) {
 
       var self = this;
 
@@ -66,17 +70,23 @@ module.exports = class WebSocketManager {
           self._countConnections++;
 
           var deviceId = self.getDeviceIdFromDeviceToken(deviceToken).toString();
-          var deviceMQPublisher = MQContext.socket('PUB');
-          var deviceMQSubscriber = MQContext.socket('SUB');
-          var MQName = namespaceId+'-'+deviceId;
-
-          deviceMQSubscriber.connect(MQName);
+          var deviceQueueName = namespaceId+'-'+deviceId;
 
           namespaceDeviceSockets[deviceId] = socket;
-          namespaceDeviceMQPubSub[deviceId] = {};
-          namespaceDeviceMQPubSub[deviceId]['pub'] = deviceMQPublisher;
-          namespaceDeviceMQPubSub[deviceId]['sub'] = deviceMQSubscriber;
 
+          // Create channel to listen for next message queued in the device queue
+          amqpConnection.createChannel(function(err, channel) {
+            if(err == null) {
+              channel.assertQueue(deviceQueueName);
+              channel.consume(deviceQueueName, function(msg) {
+                if (msg !== null) {
+                  socket.emit('event', msg.content);
+                  channel.ack(msg);
+                }
+              });
+            }
+          });
+/*
           deviceMQSubscriber.on('data', function(msg, ack()) {
             let deviceEvent = new DeviceEvent(protobuffer.DeviceEventMsg.deserializeBinary(msg));
             let targetDeviceId = deviceEvent.getTargetDeviceId().toString();
@@ -89,9 +99,9 @@ module.exports = class WebSocketManager {
 
             ack();
           });
-
-          console.log("New device connected. ID: "+deviceId);
-          console.log("Total connections: "+self._countConnections);
+*/
+          console.log("Device "+deviceId+" connected.");
+          console.log("Active connections: "+self._countConnections);
 
           socket.on('read', function () {
           });
@@ -108,28 +118,17 @@ module.exports = class WebSocketManager {
           });
 
           socket.on('event', function (data) {
-            console.log(' >> EVENT FROM CLIENT');
-//            console.log(data);
-
             let deviceEvent = new DeviceEvent(protobuffer.DeviceEventMsg.deserializeBinary(data));
             let targetDeviceId = deviceEvent.getTargetDeviceId().toString();
 
-//            console.log("TARGET DEVICE ID: "+targetDeviceId);
-/*
-            if(targetDeviceId in namespaceDeviceSockets) {
-              console.log("TARGET SOCKET FOUND");
-              let targetDeviceSocket = namespaceDeviceSockets[targetDeviceId];
-              targetDeviceSocket.emit('event', data);
-              console.log("EVENT EMITED");
-            } else {*/
-//              console.log("TARGET SOCKET NOT FOUND");
-//              console.log("TARGET ADDRESS: "+namespaceId+'-'+targetDeviceId);
-              namespaceDeviceMQPubSub[deviceId]['pub'].connect(namespaceId+'-'+targetDeviceId, function() {
-                console.log("WRITE");
-                namespaceDeviceMQPubSub[deviceId]['pub'].write(data);
-              });
-//              console.log("EVENT QUEUED");
-/*            }*/
+            // Send the event to the queue of the target device
+            amqpConnection.createChannel(function(err, channel) {
+              if (err == null) {
+                channel.assertQueue(namespaceId+'-'+targetDeviceId);
+                channel.sendToQueue(namespaceId+'-'+targetDeviceId, data);
+              }
+            });
+
           });
 
 
@@ -142,8 +141,8 @@ module.exports = class WebSocketManager {
               delete namespaceDeviceSockets[deviceId];
             }
 
-            console.log("Device disconnected.");
-            console.log("Total connections: "+self._countConnections);
+            console.log("Device "+deviceId+" disconnected.");
+            console.log("Active connections: "+self._countConnections);
           });
 
         } else {
