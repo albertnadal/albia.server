@@ -22,15 +22,15 @@ module.exports = class DeviceRecord {
     let sqlValues = [this.id_device, this.key, this.type, this.date, null, null, null, null, null, null, null, null, null];
 
     switch(this.type) {
-      case messages.DeviceRecord.RecordType.DOUBLE: sqlValues[4] = this.deviceRecordData.getDoublevalue(); break;
-      case messages.DeviceRecord.RecordType.FLOAT: sqlValues[5] = this.deviceRecordData.getFloatvalue(); break;
-      case messages.DeviceRecord.RecordType.INT32: sqlValues[6] = this.deviceRecordData.getInt32value(); break;
-      case messages.DeviceRecord.RecordType.INT64: sqlValues[7] = this.deviceRecordData.getInt64value(); break;
-      case messages.DeviceRecord.RecordType.UINT32: sqlValues[8] = this.deviceRecordData.getUint32value(); break;
-      case messages.DeviceRecord.RecordType.UINT64: sqlValues[9] = this.deviceRecordData.getUint64value(); break;
-      case messages.DeviceRecord.RecordType.BOOL: sqlValues[10] = this.deviceRecordData.getBoolvalue(); break;
-      case messages.DeviceRecord.RecordType.STRING: sqlValues[11] = this.deviceRecordData.getStringvalue(); break;
-      case messages.DeviceRecord.RecordType.BYTES:  var uint8vector = this.deviceRecordData.getBytestringvalue();
+      case messages.DeviceRecordMsg.RecordType.DOUBLE: sqlValues[4] = this.deviceRecordData.getDoublevalue(); break;
+      case messages.DeviceRecordMsg.RecordType.FLOAT: sqlValues[5] = this.deviceRecordData.getFloatvalue(); break;
+      case messages.DeviceRecordMsg.RecordType.INT32: sqlValues[6] = this.deviceRecordData.getInt32value(); break;
+      case messages.DeviceRecordMsg.RecordType.INT64: sqlValues[7] = this.deviceRecordData.getInt64value(); break;
+      case messages.DeviceRecordMsg.RecordType.UINT32: sqlValues[8] = this.deviceRecordData.getUint32value(); break;
+      case messages.DeviceRecordMsg.RecordType.UINT64: sqlValues[9] = this.deviceRecordData.getUint64value(); break;
+      case messages.DeviceRecordMsg.RecordType.BOOL: sqlValues[10] = this.deviceRecordData.getBoolvalue(); break;
+      case messages.DeviceRecordMsg.RecordType.STRING: sqlValues[11] = this.deviceRecordData.getStringvalue(); break;
+      case messages.DeviceRecordMsg.RecordType.BYTES:  var uint8vector = this.deviceRecordData.getBytestringvalue();
 						sqlValues[12] = new Buffer(uint8vector, "binary"); break;
     }
 
